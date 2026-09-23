@@ -87,6 +87,36 @@ body {
   overflow-x: hidden;
 }
 
+/* --- SCROLL REVEAL SUAVE (FLUIDEZ & TRANSIÇÕES DE ROLAGEM) --- */
+section[id] {
+  scroll-margin-top: calc(var(--header-height) + 1.25rem);
+}
+
+.reveal-scroll {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 img {
   max-width: 100%;
   height: auto;
