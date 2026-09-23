@@ -443,31 +443,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Atualização dinâmica do link ativo no header durante a rolagem
   function updateActiveNavOnScroll() {
-    const sections = document.querySelectorAll('section[id], footer[id]');
-    const navLinks = document.querySelectorAll('.main-nav .nav-link');
-    if (!sections.length || !navLinks.length) return;
+    const navSections = ['inicio', 'catalogo', 'sobre', 'servicos', 'proprietarios', 'documentos', 'simulador', 'contato'];
+    const navLinks = document.querySelectorAll('.main-nav .nav-link, .drawer-nav a');
+    if (!navLinks.length) return;
 
-    const scrollPos = window.scrollY + 140;
-    let currentSectionId = '';
+    let currentSectionId = 'inicio';
 
-    sections.forEach(sec => {
-      const top = sec.offsetTop;
-      const height = sec.offsetHeight;
-      if (scrollPos >= top && scrollPos < top + height) {
-        currentSectionId = sec.getAttribute('id');
+    // Se estiver próximo ao final da página, ativa contato
+    if ((window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 80)) {
+      currentSectionId = 'contato';
+    } else {
+      for (const id of navSections) {
+        const sec = document.getElementById(id);
+        if (sec) {
+          const rect = sec.getBoundingClientRect();
+          if (rect.top <= 160) {
+            currentSectionId = id;
+          }
+        }
+      }
+    }
+
+    navLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === `#${currentSectionId}`) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
       }
     });
-
-    if (currentSectionId) {
-      navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href === `#${currentSectionId}`) {
-          link.classList.add('active');
-        } else {
-          link.classList.remove('active');
-        }
-      });
-    }
   }
 
   const header = document.querySelector('.main-header');
@@ -482,34 +486,51 @@ document.addEventListener('DOMContentLoaded', () => {
     updateActiveNavOnScroll();
   }, { passive: true });
 
+  /* ==========================================================================
+     DRAWER MOBILE & CONTROLE DO MENU
+     ========================================================================== */
   const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-  const mainNav = document.getElementById('mainNav');
+  const drawerCloseBtn = document.getElementById('drawerCloseBtn');
+  const drawerBackdrop = document.getElementById('drawerBackdrop');
+  const mobileDrawer = document.getElementById('mobileDrawer');
 
-  if (mobileMenuBtn && mainNav) {
-    mobileMenuBtn.addEventListener('click', () => {
-      const isDisplayed = mainNav.style.display === 'block';
-      mainNav.style.display = isDisplayed ? 'none' : 'block';
-      if (!isDisplayed) {
-        mainNav.style.position = 'absolute';
-        mainNav.style.top = '80px';
-        mainNav.style.left = '0';
-        mainNav.style.right = '0';
-        mainNav.style.backgroundColor = '#FFFFFF';
-        mainNav.style.padding = '20px';
-        mainNav.style.borderBottom = '1px solid var(--border-subtle)';
-        mainNav.style.boxShadow = 'var(--shadow-md)';
-      }
-    });
-
-    const navLinks = mainNav.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
-          mainNav.style.display = 'none';
-        }
-      });
-    });
+  function openMobileDrawer() {
+    if (!mobileDrawer || !drawerBackdrop) return;
+    drawerBackdrop.classList.add('active');
+    mobileDrawer.classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
+
+  function closeMobileDrawer() {
+    if (!mobileDrawer || !drawerBackdrop) return;
+    drawerBackdrop.classList.remove('active');
+    mobileDrawer.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', openMobileDrawer);
+  }
+
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', closeMobileDrawer);
+  }
+
+  if (drawerBackdrop) {
+    drawerBackdrop.addEventListener('click', closeMobileDrawer);
+  }
+
+  document.querySelectorAll('.drawer-nav a').forEach(link => {
+    link.addEventListener('click', () => {
+      closeMobileDrawer();
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mobileDrawer && mobileDrawer.classList.contains('open')) {
+      closeMobileDrawer();
+    }
+  });
 
   /* ==========================================================================
      9. INICIALIZAÇÃO
@@ -517,4 +538,5 @@ document.addEventListener('DOMContentLoaded', () => {
   populateSelects();
   renderProperties(PROPERTIES_DATA);
   initScrollReveals();
+  updateActiveNavOnScroll();
 });
